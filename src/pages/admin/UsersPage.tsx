@@ -120,11 +120,12 @@ export default function UsersPage() {
     setCreating(true);
     try {
       const res = await adminApi.createUser(newUser);
-      if (res.success && res.data) {
-        setUsers((prev) => [res.data!, ...prev]);
+      if (res.success) {
         setShowCreateModal(false);
         setNewUser({ fullName: '', username: '', email: '', password: '', role: 'User' });
         toast.success('User created successfully');
+        // Refetch users from API to display updated list
+        await load(page);
       } else {
         toast.error(res.message || 'Failed to create user');
       }
