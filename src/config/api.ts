@@ -6,8 +6,8 @@
  */
 
 // Backend server base URL - Change this to switch environments
-// NOTE: For production (Vercel), the backend MUST use HTTPS to avoid mixed content errors
-export const API_BASE_URL = 'https://178.18.245.131:8080';
+// For production, use HTTPS. Update this URL once SSL is configured on the backend.
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://178.18.245.131:8080';
 
 // API endpoints prefix
 export const API_PREFIX = '/api';
