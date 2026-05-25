@@ -25,7 +25,7 @@ export const adminApi = {
     client.get<PagedResponse<AdminUserDto>>('/admin/users', { params: { page, pageSize } }).then((r) => r.data),
 
   createUser: (dto: CreateUserDto) =>
-    client.post<ApiResponse<AdminUserDto>>('/admin/users', dto).then((r) => r.data),
+    client.post<ApiResponse<AdminUserDto>>('/auth/register', dto).then((r) => r.data),
 
   banUser: (id: string) =>
     client.post<ApiResponse<boolean>>(`/admin/users/${id}/ban`).then((r) => r.data),
