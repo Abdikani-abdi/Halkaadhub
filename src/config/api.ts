@@ -6,7 +6,8 @@
  */
 
 // Backend server base URL - Change this to switch environments
-export const API_BASE_URL = 'http://178.18.245.131:8080';
+// NOTE: For production (Vercel), the backend MUST use HTTPS to avoid mixed content errors
+export const API_BASE_URL = 'https://178.18.245.131:8080';
 
 // API endpoints prefix
 export const API_PREFIX = '/api';
