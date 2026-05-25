@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Ban, ShieldCheck, Users, Search, Filter, MoreVertical, Mail, Star, Calendar } from 'lucide-react';
+import { Ban, ShieldCheck, Users, Search, Filter, MoreVertical, Mail, Star, Calendar, Plus, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
-import { adminApi } from '@/api/admin';
+import { adminApi, type CreateUserDto } from '@/api/admin';
 import type { AdminUserDto } from '@/types';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Pagination from '@/components/ui/Pagination';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import { PageHeader, Card } from '@/components/admin/ui';
 
 function UserAvatar({ user }: { user: AdminUserDto }) {
@@ -73,6 +75,15 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newUser, setNewUser] = useState<CreateUserDto>({
+    fullName: '',
+    username: '',
+    email: '',
+    password: '',
+    role: 'User',
+  });
 
   const load = async (p: number) => {
     setLoading(true);
@@ -86,16 +97,42 @@ export default function UsersPage() {
 
   useEffect(() => { load(page); }, [page]);
 
-  const toggleBan = async (id: string) => {
+  const toggleBan = async (user: AdminUserDto) => {
     try {
-      const res = await adminApi.banUser(id);
+      const res = user.isBanned 
+        ? await adminApi.unbanUser(user.id)
+        : await adminApi.banUser(user.id);
       if (res.success) {
-        setUsers((prev) => prev.map((u) => u.id === id ? { ...u, isBanned: !u.isBanned } : u));
-        toast.success('User updated');
+        setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, isBanned: !u.isBanned } : u));
+        toast.success(user.isBanned ? 'User unbanned' : 'User banned');
       } else {
         toast.error(res.message);
       }
     } catch { toast.error('Action failed'); }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUser.fullName || !newUser.username || !newUser.email || !newUser.password) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+    setCreating(true);
+    try {
+      const res = await adminApi.createUser(newUser);
+      if (res.success && res.data) {
+        setUsers((prev) => [res.data!, ...prev]);
+        setShowCreateModal(false);
+        setNewUser({ fullName: '', username: '', email: '', password: '', role: 'User' });
+        toast.success('User created successfully');
+      } else {
+        toast.error(res.message || 'Failed to create user');
+      }
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create user';
+      toast.error(msg);
+    }
+    setCreating(false);
   };
 
   const filteredUsers = users.filter(u =>
@@ -109,13 +146,92 @@ export default function UsersPage() {
         title="Users"
         description="Manage and monitor all registered users"
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               {users.length} total users
             </span>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              Create User
+            </button>
           </div>
         }
       />
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New User</h3>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateUser} className="p-5 space-y-4">
+              <Input
+                label="Full Name"
+                value={newUser.fullName}
+                onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
+                placeholder="John Doe"
+                required
+              />
+              <Input
+                label="Username"
+                value={newUser.username}
+                onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                placeholder="johndoe"
+                required
+              />
+              <Input
+                label="Email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                placeholder="john@example.com"
+                required
+              />
+              <Input
+                label="Password"
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                placeholder="••••••••"
+                required
+              />
+              <Select
+                label="Role"
+                value={newUser.role || 'User'}
+                onChange={(e) => setNewUser({ ...newUser, role: e.target.value as 'User' | 'Manager' | 'Admin' })}
+                options={[
+                  { value: 'User', label: 'User' },
+                  { value: 'Manager', label: 'Manager' },
+                  { value: 'Admin', label: 'Admin' },
+                ]}
+              />
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" loading={creating} className="flex-1">
+                  Create User
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <Card>
         {/* Table Header with Search */}
@@ -212,7 +328,7 @@ export default function UsersPage() {
                         <Button
                           variant={u.isBanned ? 'secondary' : 'danger'}
                           size="sm"
-                          onClick={() => toggleBan(u.id)}
+                          onClick={() => toggleBan(u)}
                           className="gap-1.5"
                         >
                           {u.isBanned ? (

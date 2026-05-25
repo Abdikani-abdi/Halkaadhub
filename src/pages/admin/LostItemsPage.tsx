@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { Search, Filter, MapPin, Calendar, Tag, MoreVertical, ExternalLink } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, Tag, MoreVertical, ExternalLink, Plus } from 'lucide-react';
 import { lostItemsApi } from '@/api/lostItems';
 import type { LostItemDto } from '@/types';
 import Badge, { statusBadgeVariant } from '@/components/ui/Badge';
@@ -70,6 +70,13 @@ export default function AdminLostItemsPage() {
             <span className="px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-sm font-medium">
               {activeCount} active
             </span>
+            <Link
+              to="/items/new?type=lost"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Create Lost Item
+            </Link>
           </div>
         }
       />

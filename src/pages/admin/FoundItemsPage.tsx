@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { Package, Search, Filter, MapPin, Calendar, Tag, MoreVertical, ExternalLink } from 'lucide-react';
+import { Package, Search, Filter, MapPin, Calendar, Tag, MoreVertical, ExternalLink, Plus } from 'lucide-react';
 import { foundItemsApi } from '@/api/foundItems';
 import type { FoundItemDto } from '@/types';
 import Badge, { statusBadgeVariant } from '@/components/ui/Badge';
@@ -70,6 +70,13 @@ export default function AdminFoundItemsPage() {
             <span className="px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
               {activeCount} active
             </span>
+            <Link
+              to="/items/new?type=found"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Create Found Item
+            </Link>
           </div>
         }
       />
