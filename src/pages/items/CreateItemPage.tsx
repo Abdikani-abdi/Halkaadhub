@@ -81,7 +81,7 @@ export default function CreateItemPage() {
         const dto = {
           title: form.title,
           description: form.description,
-          categoryId: form.categoryId || undefined,
+          categoryId: form.categoryId,
           color: form.color || undefined,
           brand: form.brand || undefined,
           locationLost: form.location || undefined,
@@ -104,7 +104,7 @@ export default function CreateItemPage() {
         const dto = {
           title: form.title,
           description: form.description,
-          categoryId: form.categoryId || undefined,
+          categoryId: form.categoryId,
           color: form.color || undefined,
           brand: form.brand || undefined,
           locationFound: form.location || undefined,
